@@ -4,16 +4,23 @@ namespace App\Livewire;
 
 use App\Models\Siswa as ModelsSiswa;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Siswa extends Component
 {
+    use WithPagination;
+    protected $paginationTheme = 'bootstrap';
+
     public $nama;
     public $email;
     public $kelas;
     public $jurusan;
-    public $dataSiswa;
     public $updateData = false;
     public $id_siswa;
+    public $cariSiswa;
+    public $siswaSelectedID = [];
+    public $sortColumn = 'nama';
+    public $sortDirection = 'asc';
 
     public function store()
     {
@@ -81,14 +88,25 @@ class Siswa extends Component
 
     public function delete_confirmation($id)
     {
-        $this->id_siswa = $id;
+        if ($id != '') {
+            $this->id_siswa = $id;
+        }
     }
 
     public function delete()
     {
-        $id = $this->id_siswa;
+        if ($this->id_siswa != '') {
+            $id = $this->id_siswa;
+            ModelsSiswa::find($id)->delete();
+        }
 
-        ModelsSiswa::find($id)->delete();
+        if (count($this->siswaSelectedID)) {
+            for($x = 0 ; $x < count($this->siswaSelectedID); $x++) {
+                ModelsSiswa::find($this->siswaSelectedID[$x])->delete();
+            }
+        }
+
+        $this->siswaSelectedID = [];
 
         $this->reset(['nama', 'email', 'kelas', 'jurusan']);
 
@@ -96,9 +114,29 @@ class Siswa extends Component
 
     }
 
+    public function resetSelectedID()
+    {
+        $this->siswaSelectedID = [];
+    }
+
+    public function sort($columnName)
+    {
+        $this->sortColumn = $columnName;
+        $this->sortDirection = $this->sortDirection == 'asc' ? 'desc' : 'asc';
+    }
+
     public function render()
     {
-        $this->dataSiswa = ModelsSiswa::orderBy('nama', 'asc')->get();
-        return view('livewire.siswa');
+        if ($this->cariSiswa != null) {
+            $data = ModelsSiswa::where('nama', 'like', '%' . $this->cariSiswa . '%')
+            ->orWhere('email', 'like', '%' . $this->cariSiswa . '%')
+            ->orWhere('kelas', 'like', '%' . $this->cariSiswa . '%')
+            ->orWhere('jurusan', 'like', '%' . $this->cariSiswa . '%')
+            ->orderBy($this->sortColumn, $this->sortDirection)->paginate(5);
+        } else {
+            $data = ModelsSiswa::orderBy($this->sortColumn, $this->sortDirection)->paginate(5);
+        }
+        
+        return view('livewire.siswa', ['dataSiswa' => $data]);
     }
 }

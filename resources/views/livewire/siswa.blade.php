@@ -68,14 +68,27 @@
     <!-- START DATA -->
     <div class="my-3 p-3 bg-body rounded shadow-sm">
         <h1>Data Siswa</h1>
-        <table class="table table-striped">
+
+        <div class="row justify-content-end pe-2">
+            <input type="text" class="form-control mb-1 w-25" placeholder="Search" wire:model.live="cariSiswa">
+        </div>
+        
+        @if ($siswaSelectedID)
+        <a wire:click="delete_confirmation('')" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal">Delete {{ count($siswaSelectedID) }} Data</a>
+        <a wire:click="resetSelectedID()" class="btn btn-secondary btn-sm">Reset</a>
+        @endif
+
+        <hr>
+        
+        <table class="table table-striped table-sortable">
             <thead>
                 <tr>
+                    <th></th>
                     <th class="col-md-1">No</th>
-                    <th class="col-md-2">Nama</th>
-                    <th class="col-md-2">Email</th>
-                    <th class="col-md-1">Kelas</th>
-                    <th class="col-md-3">Jurusan</th>
+                    <th class="col-md-2 sort @if($sortColumn == 'nama') {{ $sortDirection }}  @endif" wire:click="sort('nama')">Nama</th>
+                    <th class="col-md-2 sort @if($sortColumn == 'email') {{ $sortDirection }}  @endif" wire:click="sort('email')">Email</th>
+                    <th class="col-md-1 sort @if($sortColumn == 'kelas') {{ $sortDirection }}  @endif" wire:click="sort('kelas')">Kelas</th>
+                    <th class="col-md-3 sort @if($sortColumn == 'jurusan') {{ $sortDirection }}  @endif" wire:click="sort('jurusan')">Jurusan</th>
                     <th class="col-md-3">Aksi</th>
                 </tr>
             </thead>
@@ -83,7 +96,8 @@
                 @foreach ($dataSiswa as $key => $siswa)
                     
                 <tr>
-                    <td>{{ $loop->iteration }}</td>
+                    <td><input type="checkbox" wire:key="{{ $siswa->id }}" value="{{ $siswa->id }}" wire:model.live="siswaSelectedID"></td>
+                    <td>{{ $dataSiswa->firstItem() + $key }}</td>
                     <td>{{ $siswa->nama }}</td>
                     <td>{{ $siswa->email }}</td>
                     <td>{{ $siswa->kelas }}</td>
@@ -96,6 +110,7 @@
                 @endforeach
             </tbody>
         </table>
+        {{ $dataSiswa->links() }}
     </div>
     <!-- AKHIR DATA -->
     <!-- Modal -->
