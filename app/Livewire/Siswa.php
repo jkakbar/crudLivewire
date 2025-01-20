@@ -62,9 +62,11 @@ class Siswa extends Component
 
     public function update()
     {
+        $data = ModelsSiswa::find($this->id_siswa);
+
         $rules = [
             'nama' => 'required',
-            'email' => 'required|email',
+            'email' => 'required|email|unique:siswas,email,' . $data->id . 'id',
             'kelas' => 'required|integer|min:10|max:12',
             'jurusan' => 'required',
         ];
@@ -73,12 +75,13 @@ class Siswa extends Component
             'nama.required' => 'Nama wajib diisi',
             'email.required' => 'Email wajib diisi',
             'email.email' => 'Format email tidak sesuai',
+            'email.unique' => 'Email telah digunakan',
             'kelas.required' => 'Kelas wajib diisi',
             'jurusan.required' => 'Jurusan wajib diisi',
         ];
 
         $validated = $this->validate($rules, $pesan);
-        $data = ModelsSiswa::find($this->id_siswa);
+        
         $data->update($validated);
 
         $this->reset(['nama', 'email', 'kelas', 'jurusan']);
